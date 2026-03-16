@@ -1,0 +1,24 @@
+# 가상환경
+venv/
+.venv/
+
+# 환경변수 (API 키 노출 주의)
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
