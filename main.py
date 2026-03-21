@@ -1,20 +1,35 @@
 from fastapi import FastAPI
-from routers import chat
-from routers import weight
+from routers import chat, weight, route
 from services.rag import init_rag
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from contextlib import asynccontextmanager
+
 
 app = FastAPI(title="Seoul Walking Path RAG Service")
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-@app.on_event("startup")
-async def startup_event():
-    init_rag()  # 서버 시작 시 벡터스토어 1회 초기화
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    init_rag()
+    yield
 
 
 app.include_router(chat.router, prefix="/api")
 app.include_router(weight.router, prefix="/api")
+app.include_router(route.router, prefix="/api")
 
 
 @app.get("/health")
 def health_check():
     return {"status": "ok"}
+
+
+app.mount("/", StaticFiles(directory="frontend", html=True), name="frontend")

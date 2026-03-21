@@ -16,3 +16,6 @@ sqlalchemy[asyncio]
 asyncpg
 openai
 langchain-text-splitters
+
+osmnx
+networkx
