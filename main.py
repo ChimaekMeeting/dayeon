@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from routers import chat
+from routers import weight
 from services.rag import init_rag
 
 app = FastAPI(title="Seoul Walking Path RAG Service")
@@ -11,6 +12,7 @@ async def startup_event():
 
 
 app.include_router(chat.router, prefix="/api")
+app.include_router(weight.router, prefix="/api")
 
 
 @app.get("/health")
