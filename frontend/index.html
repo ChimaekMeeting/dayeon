@@ -4,283 +4,189 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>루디 (Roudi)</title>
-
-  <!-- Mapbox GL JS -->
   <link href="https://api.mapbox.com/mapbox-gl-js/v3.3.0/mapbox-gl.css" rel="stylesheet" />
   <script src="https://api.mapbox.com/mapbox-gl-js/v3.3.0/mapbox-gl.js"></script>
-
-  <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+KR:wght@300;400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
 
   <style>
-    /* ─────────────────────── 리셋 & 기본 ─────────────────────── */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg:       #0d1117;
-      --panel:    #161b22;
-      --border:   #21262d;
-      --accent:   #39d353;
-      --accent2:  #58a6ff;
-      --text:     #e6edf3;
-      --muted:    #7d8590;
-      --danger:   #f85149;
-      --route:    #39d353;
-      --route2:   #58a6ff;
+      --bg:      #0d1117;
+      --panel:   #161b22;
+      --border:  #21262d;
+      --accent:  #39d353;
+      --accent2: #58a6ff;
+      --text:    #e6edf3;
+      --muted:   #7d8590;
+      --danger:  #f85149;
     }
 
     html, body { height: 100%; font-family: 'Noto Sans KR', sans-serif; background: var(--bg); color: var(--text); overflow: hidden; }
 
-    /* ─────────────────────── 레이아웃 ─────────────────────── */
     #app { display: flex; height: 100vh; width: 100vw; }
 
     #sidebar {
-      width: 380px;
-      min-width: 340px;
+      width: 400px; min-width: 360px;
       background: var(--panel);
       border-right: 1px solid var(--border);
-      display: flex;
-      flex-direction: column;
-      z-index: 10;
-      overflow: hidden;
+      display: flex; flex-direction: column;
+      z-index: 10; overflow: hidden;
     }
 
     #map-container { flex: 1; position: relative; }
     #map { width: 100%; height: 100%; }
 
-    /* ─────────────────────── 사이드바 헤더 ─────────────────────── */
+    /* ── 헤더 ── */
     .sidebar-header {
-      padding: 24px 24px 20px;
+      padding: 22px 24px 18px;
       border-bottom: 1px solid var(--border);
       flex-shrink: 0;
     }
+    .logo { font-family: 'Bebas Neue', sans-serif; font-size: 36px; letter-spacing: 3px; color: var(--accent); line-height: 1; }
+    .logo-sub { font-size: 11px; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; margin-top: 4px; }
 
-    .logo {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 36px;
-      letter-spacing: 3px;
-      color: var(--accent);
-      line-height: 1;
-    }
-
-    .logo-sub {
-      font-size: 11px;
-      color: var(--muted);
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      margin-top: 4px;
-    }
-
-    /* ─────────────────────── 입력 영역 ─────────────────────── */
+    /* ── 본문 ── */
     .sidebar-body {
-      flex: 1;
-      overflow-y: auto;
+      flex: 1; overflow-y: auto;
       padding: 20px 24px;
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
+      display: flex; flex-direction: column; gap: 16px;
     }
+    .sidebar-body::-webkit-scrollbar { width: 4px; }
+    .sidebar-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
 
     .section-label {
-      font-size: 11px;
-      font-weight: 500;
-      color: var(--muted);
-      letter-spacing: 1.5px;
-      text-transform: uppercase;
-      margin-bottom: 4px;
+      font-size: 11px; font-weight: 500;
+      color: var(--muted); letter-spacing: 1.5px;
+      text-transform: uppercase; margin-bottom: 4px;
     }
 
     .input-block { display: flex; flex-direction: column; gap: 6px; }
 
-    textarea#nlInput {
-      width: 100%;
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      color: var(--text);
-      font-family: 'Noto Sans KR', sans-serif;
-      font-size: 14px;
-      line-height: 1.6;
-      padding: 12px 14px;
-      resize: none;
-      height: 90px;
-      transition: border-color .2s;
-      outline: none;
-    }
-
-    textarea#nlInput::placeholder { color: var(--muted); }
-    textarea#nlInput:focus { border-color: var(--accent); }
-
-    /* 예시 칩 */
-    .chips { display: flex; flex-wrap: wrap; gap: 6px; }
-
-    .chip {
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      padding: 4px 12px;
-      font-size: 12px;
-      color: var(--muted);
-      cursor: pointer;
-      transition: all .15s;
-      white-space: nowrap;
-    }
-    .chip:hover { border-color: var(--accent); color: var(--accent); }
-
-    /* 루트 타입 선택 */
+    /* ── 루트 유형 버튼 ── */
     .route-types { display: flex; gap: 8px; }
-
     .type-btn {
-      flex: 1;
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 10px 8px;
-      color: var(--muted);
-      font-family: 'Noto Sans KR', sans-serif;
-      font-size: 12px;
-      cursor: pointer;
-      text-align: center;
-      transition: all .15s;
+      flex: 1; background: var(--bg);
+      border: 1px solid var(--border); border-radius: 8px;
+      padding: 10px 8px; color: var(--muted);
+      font-family: 'Noto Sans KR', sans-serif; font-size: 12px;
+      cursor: pointer; text-align: center; transition: all .15s;
     }
     .type-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(57,211,83,.08); }
     .type-btn:hover:not(.active) { border-color: #444d56; color: var(--text); }
-
     .type-icon { font-size: 18px; display: block; margin-bottom: 4px; }
 
-    /* 실행 버튼 */
+    /* ── 입력창 ── */
+    textarea {
+      width: 100%; background: var(--bg);
+      border: 1px solid var(--border); border-radius: 8px;
+      color: var(--text); font-family: 'Noto Sans KR', sans-serif;
+      font-size: 14px; line-height: 1.6;
+      padding: 12px 14px; resize: none; outline: none;
+      transition: border-color .2s;
+    }
+    textarea::placeholder { color: var(--muted); }
+    textarea:focus { border-color: var(--accent); }
+
+    #nlInput { height: 90px; }
+
+    /* ── 목적지 입력 (waypoint 전용) ── */
+    #destinationBlock { display: none; }
+    #destinationBlock.visible { display: flex; }
+    #destinationInput { height: 44px; }
+
+    /* ── 예시 칩 ── */
+    .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+    .chip {
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: 20px; padding: 4px 12px;
+      font-size: 12px; color: var(--muted);
+      cursor: pointer; transition: all .15s; white-space: nowrap;
+    }
+    .chip:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* ── 실행 버튼 ── */
     #runBtn {
-      width: 100%;
-      background: var(--accent);
-      border: none;
-      border-radius: 8px;
-      color: #0d1117;
-      font-family: 'Noto Sans KR', sans-serif;
-      font-weight: 700;
-      font-size: 14px;
-      padding: 13px;
-      cursor: pointer;
+      width: 100%; background: var(--accent);
+      border: none; border-radius: 8px;
+      color: #0d1117; font-family: 'Noto Sans KR', sans-serif;
+      font-weight: 700; font-size: 14px;
+      padding: 13px; cursor: pointer;
       transition: opacity .15s, transform .1s;
-      letter-spacing: .5px;
     }
     #runBtn:hover { opacity: .88; }
     #runBtn:active { transform: scale(.98); }
     #runBtn:disabled { opacity: .4; cursor: not-allowed; }
 
-    /* ─────────────────────── 결과 영역 ─────────────────────── */
+    /* ── 로딩 ── */
+    #loader { display: none; align-items: center; gap: 10px; font-size: 13px; color: var(--muted); }
+    #loader.visible { display: flex; }
+    .spinner {
+      width: 16px; height: 16px;
+      border: 2px solid var(--border); border-top-color: var(--accent);
+      border-radius: 50%; animation: spin .7s linear infinite; flex-shrink: 0;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── 오류 ── */
+    #errorMsg { display: none; background: rgba(248,81,73,.1); border: 1px solid rgba(248,81,73,.3); border-radius: 8px; padding: 10px 14px; font-size: 12px; color: var(--danger); }
+    #errorMsg.visible { display: block; }
+
+    /* ── 결과 ── */
     #resultSection { display: none; flex-direction: column; gap: 14px; }
     #resultSection.visible { display: flex; }
 
-    .divider { height: 1px; background: var(--border); margin: 4px 0; }
+    .divider { height: 1px; background: var(--border); }
 
+    /* LLM 설명 */
+    .reply-box {
+      background: var(--bg); border: 1px solid var(--border);
+      border-left: 3px solid var(--accent);
+      border-radius: 0 8px 8px 0;
+      padding: 12px 14px; font-size: 13px;
+      line-height: 1.7; color: var(--text);
+    }
 
+    /* 루트 옵션 */
+    .route-options { display: flex; flex-direction: column; gap: 6px; }
+    .route-option {
+      display: flex; align-items: center; gap: 10px;
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: 8px; padding: 10px 12px;
+      cursor: pointer; transition: all .15s;
+    }
+    .route-option:hover { border-color: var(--accent2); }
+    .route-option.selected { border-color: var(--accent); background: rgba(57,211,83,.06); }
+    .route-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+    .route-option-info { flex: 1; }
+    .route-option-name { font-size: 12px; font-weight: 600; }
+    .route-option-detail { font-size: 11px; color: var(--muted); margin-top: 2px; }
+    .route-option-stat { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--accent); }
 
-    /* 루트 요약 카드 */
+    /* 요약 카드 */
     .route-cards { display: flex; gap: 8px; }
     .route-card {
-      flex: 1;
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 12px 10px;
-      text-align: center;
+      flex: 1; background: var(--bg);
+      border: 1px solid var(--border); border-radius: 8px;
+      padding: 12px 10px; text-align: center;
     }
     .route-card-val { font-size: 20px; font-weight: 700; color: var(--accent); font-family: 'DM Mono', monospace; }
     .route-card-unit { font-size: 10px; color: var(--muted); margin-top: 2px; }
 
-    /* 후보 루트 선택 */
-    .route-options { display: flex; flex-direction: column; gap: 6px; }
-    .route-option {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 10px 12px;
-      cursor: pointer;
-      transition: all .15s;
-    }
-    .route-option:hover { border-color: var(--accent2); }
-    .route-option.selected { border-color: var(--accent); background: rgba(57,211,83,.06); }
-
-    .route-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
-    .route-option-info { flex: 1; }
-    .route-option-name { font-size: 12px; font-weight: 500; }
-    .route-option-detail { font-size: 11px; color: var(--muted); margin-top: 2px; }
-
-    /* ─────────────────────── 로딩 스피너 ─────────────────────── */
-    #loader {
-      display: none;
-      align-items: center;
-      gap: 10px;
-      font-size: 13px;
-      color: var(--muted);
-    }
-    #loader.visible { display: flex; }
-
-    .spinner {
-      width: 16px; height: 16px;
-      border: 2px solid var(--border);
-      border-top-color: var(--accent);
-      border-radius: 50%;
-      animation: spin .7s linear infinite;
-      flex-shrink: 0;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    /* ─────────────────────── 오류 메시지 ─────────────────────── */
-    #errorMsg {
-      display: none;
-      background: rgba(248,81,73,.1);
-      border: 1px solid rgba(248,81,73,.3);
-      border-radius: 8px;
-      padding: 10px 14px;
-      font-size: 12px;
-      color: var(--danger);
-    }
-    #errorMsg.visible { display: block; }
-
-    /* ─────────────────────── 지도 위 오버레이 ─────────────────────── */
+    /* ── 지도 배지 ── */
     #map-badge {
-      position: absolute;
-      top: 16px; right: 16px;
-      background: var(--panel);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 8px 14px;
-      font-size: 12px;
-      color: var(--muted);
-      pointer-events: none;
-      z-index: 5;
+      position: absolute; top: 16px; right: 16px;
+      background: var(--panel); border: 1px solid var(--border);
+      border-radius: 8px; padding: 8px 14px;
+      font-size: 12px; color: var(--muted);
+      pointer-events: none; z-index: 5;
     }
-
-    /* 스크롤바 */
-    .sidebar-body::-webkit-scrollbar { width: 4px; }
-    .sidebar-body::-webkit-scrollbar-track { background: transparent; }
-    .sidebar-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
-
-    /* ─────────────────────── 토큰 경고 배너 ─────────────────────── */
-    #tokenWarning {
-      background: rgba(88,166,255,.1);
-      border-bottom: 1px solid rgba(88,166,255,.2);
-      padding: 8px 16px;
-      font-size: 11px;
-      color: var(--accent2);
-      text-align: center;
-      display: none;
-    }
-    #tokenWarning.visible { display: block; }
   </style>
 </head>
 <body>
-
-<div id="tokenWarning">
-  ⚠️ Mapbox 토큰을 교체해주세요 — 코드 상단 <code>MAPBOX_TOKEN</code> 변수를 수정하면 됩니다.
-</div>
-
 <div id="app">
-  <!-- ─── 사이드바 ─── -->
+
+  <!-- ── 사이드바 ── -->
   <div id="sidebar">
     <div class="sidebar-header">
       <div class="logo">ROUDI</div>
@@ -289,36 +195,52 @@
 
     <div class="sidebar-body">
 
-      <!-- 루트 타입 -->
+      <!-- 루트 유형 -->
       <div class="input-block">
         <div class="section-label">경로 유형</div>
         <div class="route-types">
-          <button class="type-btn active" data-type="loop" onclick="selectType('loop', this)">
+          <button class="type-btn active" onclick="selectType('loop', this)">
             <span class="type-icon">🔄</span>순환 루트
           </button>
-          <button class="type-btn" data-type="waypoint" onclick="selectType('waypoint', this)">
+          <button class="type-btn" onclick="selectType('waypoint', this)">
             <span class="type-icon">📍</span>목적지 경유
           </button>
         </div>
       </div>
 
-      <!-- 자연어 입력 -->
-      <div class="input-block">
-        <div class="section-label">원하는 조건을 자유롭게 말해줘</div>
-        <textarea id="nlInput" placeholder="예) 유모차 끌고 30분 정도 산책하고 싶어&#10;예) 5km 뛰고 싶어, 공원 지나는 코스로"></textarea>
+      <!-- 목적지 입력 (waypoint 전용) -->
+      <div class="input-block input-block" id="destinationBlock">
+        <div class="section-label">목적지</div>
+        <textarea id="destinationInput" rows="1" placeholder="예) 연신내역, 불광천, 은평뉴타운공원"></textarea>
       </div>
 
-      <!-- 실행 -->
+      <!-- 조건 입력 -->
+      <div class="input-block">
+        <div class="section-label">원하는 조건을 자유롭게 말해줘</div>
+        <textarea id="nlInput" placeholder="예) 30분 정도 산책하고 싶어&#10;예) 5km 달리고 싶어&#10;예) 연신내역까지 3km로 돌아서 가줘"></textarea>
+        <div class="chips">
+          <span class="chip" onclick="setChip('🏃 5km 달리기 순환')">🏃 5km 달리기</span>
+          <span class="chip" onclick="setChip('유모차 산책 30분')">🧸 유모차 30분</span>
+          <span class="chip" onclick="setChip('조용한 자연 코스 1시간')">🌿 자연 코스</span>
+          <span class="chip" onclick="setChip('야간 안전한 경로 3km')">🌙 야간 안전</span>
+        </div>
+      </div>
+
+      <!-- 실행 버튼 -->
       <button id="runBtn" onclick="run()">경로 추천 받기 →</button>
 
       <!-- 로딩 -->
-      <div id="loader"><div class="spinner"></div><span id="loaderText">가중치 분석 중...</span></div>
+      <div id="loader"><div class="spinner"></div><span id="loaderText">경로 생성 중...</span></div>
 
       <!-- 오류 -->
       <div id="errorMsg"></div>
 
       <!-- 결과 -->
       <div id="resultSection">
+        <div class="divider"></div>
+
+        <!-- LLM 설명 -->
+        <div class="reply-box" id="replyBox"></div>
 
         <div class="divider"></div>
 
@@ -328,14 +250,14 @@
           <div class="route-options" id="routeOptions"></div>
         </div>
 
-        <!-- 루트 요약 -->
+        <!-- 요약 카드 -->
         <div class="route-cards" id="routeSummary"></div>
-
       </div>
+
     </div>
   </div>
 
-  <!-- ─── 지도 ─── -->
+  <!-- ── 지도 ── -->
   <div id="map-container">
     <div id="map"></div>
     <div id="map-badge">📍 서울시 은평구 구파발 · 연신내</div>
@@ -344,127 +266,58 @@
 
 <script>
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  //  ⚙️  설정 — 이 두 값만 바꾸면 돼
+  //  설정
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  const MAPBOX_TOKEN = MAPBOX_TOKEN;  // Mapbox 토큰
-  const API_BASE     = 'http://localhost:8000';    // FastAPI 백엔드 주소
-
-  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  //  더미 루트 데이터 (백엔드 /api/route 구현 전 사용)
-  //  구파발 · 연신내 실제 좌표 기반
-  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  const DUMMY_ROUTES = [
-    {
-      id: 'route-a',
-      name: '북한산 둘레길 코스',
-      color: '#39d353',
-      distance_km: 3.2,
-      minutes: 48,
-      description: '자연친화 · 경사 완만',
-      coords: [
-        [126.9203, 37.6347],[126.9235, 37.6375],[126.9270, 37.6390],
-        [126.9300, 37.6370],[126.9310, 37.6340],[126.9285, 37.6310],
-        [126.9250, 37.6300],[126.9215, 37.6315],[126.9203, 37.6347]
-      ]
-    },
-    {
-      id: 'route-b',
-      name: '연신내 하천변 코스',
-      color: '#58a6ff',
-      distance_km: 2.5,
-      minutes: 37,
-      description: '평탄 · 야간 안전',
-      coords: [
-        [126.9203, 37.6347],[126.9185, 37.6320],[126.9175, 37.6290],
-        [126.9185, 37.6265],[126.9210, 37.6255],[126.9240, 37.6268],
-        [126.9255, 37.6295],[126.9240, 37.6325],[126.9203, 37.6347]
-      ]
-    },
-    {
-      id: 'route-c',
-      name: '구파발 공원 순환',
-      color: '#d2a8ff',
-      distance_km: 1.8,
-      minutes: 27,
-      description: '짧고 편안 · 유모차 가능',
-      coords: [
-        [126.9203, 37.6347],[126.9220, 37.6355],[126.9235, 37.6345],
-        [126.9230, 37.6330],[126.9215, 37.6325],[126.9203, 37.6347]
-      ]
-    }
-  ];
+  const MAPBOX_TOKEN = 'please enter your mapbox token';
+  const API_BASE     = 'http://localhost:8000';
 
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   //  상태
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  let map, selectedType = 'loop', selectedRouteId = null;
-  let routeLayerIds = [];
+  let selectedType   = 'loop';
+  let routeLayerIds  = [];
+  let currentRoutes  = [];
 
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  //  Mapbox 초기화
+  //  지도 초기화
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  function initMap() {
-    if (MAPBOX_TOKEN === 'YOUR_MAPBOX_TOKEN_HERE') {
-      document.getElementById('tokenWarning').classList.add('visible');
-    }
-
-    mapboxgl.accessToken = MAPBOX_TOKEN;
-
-    map = new mapboxgl.Map({
-      container: 'map',
-      style: 'mapbox://styles/mapbox/dark-v11',
-      center: [126.9203, 37.6347],  // 구파발역
-      zoom: 14,
-      pitch: 30,
-      bearing: -10
-    });
-
-    map.addControl(new mapboxgl.NavigationControl(), 'bottom-right');
-    map.addControl(new mapboxgl.GeolocateControl({
-      positionOptions: { enableHighAccuracy: true },
-      trackUserLocation: true
-    }), 'bottom-right');
-
-    // 출발점 마커
-    new mapboxgl.Marker({ color: '#39d353' })
-      .setLngLat([126.9203, 37.6347])
-      .setPopup(new mapboxgl.Popup().setHTML('<b>📍 출발점</b><br>구파발역'))
-      .addTo(map);
-  }
+  mapboxgl.accessToken = MAPBOX_TOKEN;
+  const map = new mapboxgl.Map({
+    container: 'map',
+    style: 'mapbox://styles/mapbox/dark-v11',
+    center: [126.9203, 37.6347],
+    zoom: 14, pitch: 30, bearing: -10,
+  });
+  map.addControl(new mapboxgl.NavigationControl(), 'bottom-right');
+  map.addControl(new mapboxgl.GeolocateControl({ trackUserLocation: true }), 'bottom-right');
+  new mapboxgl.Marker({ color: '#39d353' })
+    .setLngLat([126.9203, 37.6347])
+    .setPopup(new mapboxgl.Popup().setHTML('<b>📍 출발점</b><br>구파발역'))
+    .addTo(map);
 
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  //  UI 헬퍼
+  //  루트 유형 선택
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  function setLoading(msg) {
-    document.getElementById('loader').classList.add('visible');
-    document.getElementById('loaderText').textContent = msg;
-    document.getElementById('runBtn').disabled = true;
-    document.getElementById('errorMsg').classList.remove('visible');
-  }
-
-  function clearLoading() {
-    document.getElementById('loader').classList.remove('visible');
-    document.getElementById('runBtn').disabled = false;
-  }
-
-  function showError(msg) {
-    const el = document.getElementById('errorMsg');
-    el.textContent = msg;
-    el.classList.add('visible');
-  }
-
   function selectType(type, btn) {
     selectedType = type;
     document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
+
+    const destBlock = document.getElementById('destinationBlock');
+    if (type === 'waypoint') {
+      destBlock.classList.add('visible');
+    } else {
+      destBlock.classList.remove('visible');
+      document.getElementById('destinationInput').value = '';
+    }
   }
 
-  function setChip(chip) {
-    document.getElementById('nlInput').value = chip.textContent.replace(/^[^\s]+\s/, '');
+  function setChip(text) {
+    document.getElementById('nlInput').value = text;
   }
 
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  //  루트 레이어 초기화
+  //  루트 렌더링
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   function clearRoutes() {
     routeLayerIds.forEach(id => {
@@ -475,53 +328,35 @@
   }
 
   function drawRoutes(routes) {
-    if (!map.isStyleLoaded()) {
-      map.once('idle', () => drawRoutes(routes));
-      return;
-    }
-
+    if (!map.isStyleLoaded()) { map.once('idle', () => drawRoutes(routes)); return; }
     clearRoutes();
-
-    const ts = Date.now();  // ← 매 호출마다 고유 ID 생성
+    const ts = Date.now();
 
     routes.forEach((route, i) => {
-      const sourceId = `route-source-${route.id}-${ts}`;
-      const layerId  = `route-layer-${route.id}-${ts}`;
+      const sid = `rs-${route.id}-${ts}`;
+      const lid = `rl-${route.id}-${ts}`;
 
-      map.addSource(sourceId, {
+      map.addSource(sid, {
         type: 'geojson',
-        data: {
-          type: 'Feature',
-          geometry: { type: 'LineString', coordinates: route.coords }
-        }
+        data: { type: 'Feature', geometry: { type: 'LineString', coordinates: route.coords } }
       });
-
-      map.addLayer({
-        id: layerId + '-shadow',
-        type: 'line',
-        source: sourceId,
-        layout: { 'line-join': 'round', 'line-cap': 'round' },
+      map.addLayer({ id: lid+'-shadow', type: 'line', source: sid,
+        layout: { 'line-join':'round','line-cap':'round' },
         paint: { 'line-color': route.color, 'line-width': 12, 'line-opacity': 0.15, 'line-blur': 4 }
       });
-
-      map.addLayer({
-        id: layerId,
-        type: 'line',
-        source: sourceId,
-        layout: { 'line-join': 'round', 'line-cap': 'round' },
+      map.addLayer({ id: lid, type: 'line', source: sid,
+        layout: { 'line-join':'round','line-cap':'round' },
         paint: {
           'line-color': route.color,
           'line-width': i === 0 ? 4 : 2.5,
           'line-opacity': i === 0 ? 1 : 0.45,
-          'line-dasharray': i === 0 ? [1] : [2, 1.5]
+          'line-dasharray': i === 0 ? [1] : [2, 1.5],
         }
       });
-
-      routeLayerIds.push(sourceId, layerId + '-shadow', layerId);
-
-      map.on('click', layerId, () => selectRoute(route.id, routes));
-      map.on('mouseenter', layerId, () => map.getCanvas().style.cursor = 'pointer');
-      map.on('mouseleave', layerId, () => map.getCanvas().style.cursor = '');
+      routeLayerIds.push(sid, lid+'-shadow', lid);
+      map.on('click', lid, () => selectRoute(route.id));
+      map.on('mouseenter', lid, () => map.getCanvas().style.cursor = 'pointer');
+      map.on('mouseleave', lid, () => map.getCanvas().style.cursor = '');
     });
 
     const bounds = new mapboxgl.LngLatBounds();
@@ -529,139 +364,114 @@
     map.fitBounds(bounds, { padding: 60, duration: 800 });
   }
 
-  function selectRoute(id, routes) {
-    selectedRouteId = id;
-
-    // 선택 강조
-    routes.forEach((r, i) => {
-      const layerId = `route-layer-${r.id}`;
-      if (!map.getLayer(layerId)) return;
-      const isSelected = r.id === id;
-      map.setPaintProperty(layerId, 'line-width', isSelected ? 5 : 2);
-      map.setPaintProperty(layerId, 'line-opacity', isSelected ? 1 : 0.3);
+  function selectRoute(id) {
+    currentRoutes.forEach(r => {
+      const layers = routeLayerIds.filter(l => l.startsWith(`rl-${r.id}-`) && !l.includes('shadow'));
+      layers.forEach(lid => {
+        if (!map.getLayer(lid)) return;
+        map.setPaintProperty(lid, 'line-width',   r.id === id ? 5 : 2);
+        map.setPaintProperty(lid, 'line-opacity',  r.id === id ? 1 : 0.3);
+      });
     });
-
-    // UI 선택 표시
     document.querySelectorAll('.route-option').forEach(el => {
       el.classList.toggle('selected', el.dataset.routeId === id);
     });
-
-    // 요약 업데이트
-    const route = routes.find(r => r.id === id);
-    if (route) updateRouteSummary(route);
+    const route = currentRoutes.find(r => r.id === id);
+    if (route) renderSummary(route);
   }
 
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  //  결과 렌더링
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   function renderRouteOptions(routes) {
-    const container = document.getElementById('routeOptions');
-    container.innerHTML = routes.map((r, i) => `
-      <div class="route-option ${i === 0 ? 'selected' : ''}" data-route-id="${r.id}"
-           onclick="selectRoute('${r.id}', window.__routes)">
+    document.getElementById('routeOptions').innerHTML = routes.map((r, i) => `
+      <div class="route-option ${i===0?'selected':''}" data-route-id="${r.id}" onclick="selectRoute('${r.id}')">
         <div class="route-dot" style="background:${r.color}"></div>
         <div class="route-option-info">
           <div class="route-option-name">${r.name}</div>
-          <div class="route-option-detail">${r.description} · ${r.distance_km}km · ${r.minutes}분</div>
+          <div class="route-option-detail">${r.description}</div>
         </div>
+        <div class="route-option-stat">${r.distance_km}km · ${r.minutes}분</div>
       </div>`).join('');
   }
 
-  function updateRouteSummary(route) {
+  function renderSummary(route) {
     document.getElementById('routeSummary').innerHTML = `
-      <div class="route-card">
-        <div class="route-card-val">${route.distance_km}</div>
-        <div class="route-card-unit">km</div>
-      </div>
-      <div class="route-card">
-        <div class="route-card-val">${route.minutes}</div>
-        <div class="route-card-unit">분</div>
-      </div>
-      <div class="route-card">
-        <div class="route-card-val">${Math.round(route.distance_km * 1300)}</div>
-        <div class="route-card-unit">걸음</div>
-      </div>`;
+      <div class="route-card"><div class="route-card-val">${route.distance_km}</div><div class="route-card-unit">km</div></div>
+      <div class="route-card"><div class="route-card-val">${route.minutes}</div><div class="route-card-unit">분</div></div>
+      <div class="route-card"><div class="route-card-val">${Math.round(route.distance_km*1300)}</div><div class="route-card-unit">걸음</div></div>`;
   }
 
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  //  메인 실행 함수
+  //  메인 실행
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   async function run() {
-    const message = document.getElementById('nlInput').value.trim();
-    if (!message) {
-      showError('조건을 입력해주세요.');
-      return;
+    const nlInput   = document.getElementById('nlInput').value.trim();
+    const destInput = document.getElementById('destinationInput').value.trim();
+
+    // 메시지 조합 — 목적지가 있으면 자연어에 포함시켜서 전달
+    let message = nlInput;
+    if (selectedType === 'waypoint' && destInput) {
+      if (nlInput) {
+        message = `${destInput}까지 ${nlInput}`;
+      } else {
+        message = `${destInput}까지 걸어갈게`;
+      }
     }
+
+    if (!message) { showError('조건을 입력해주세요.'); return; }
 
     document.getElementById('resultSection').classList.remove('visible');
-    setLoading('경로 생성 중...');
-
-    let routes;
+    document.getElementById('errorMsg').classList.remove('visible');
+    setLoading(true);
 
     try {
-      const routeRes = await fetch(`${API_BASE}/api/route`, {
+      const res = await fetch(`${API_BASE}/api/chat-route`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          type         : selectedType,
-          start_lat    : 37.6347,
-          start_lng    : 126.9203,
-          goal_km      : _parseGoalKm(message),
-          goal_minutes : _parseGoalMinutes(message),
-          is_running   : message.includes('뛰') || message.includes('달리'),
-        })
+        body: JSON.stringify({ message }),
       });
 
-      if (!routeRes.ok) throw new Error(`서버 오류: ${routeRes.status}`);
-      const data = await routeRes.json();
-      routes = data.routes;
+      if (!res.ok) throw new Error(`서버 오류: ${res.status}`);
+      const data = await res.json();
+
+      setLoading(false);
+
+      if (!data.routes || !data.routes.length) {
+        showError(data.reply || '경로를 찾지 못했어요.');
+        return;
+      }
+
+      // 결과 표시
+      document.getElementById('replyBox').textContent = data.reply;
+      currentRoutes = data.routes;
+      renderRouteOptions(data.routes);
+      renderSummary(data.routes[0]);
+      document.getElementById('resultSection').classList.add('visible');
+      drawRoutes(data.routes);
 
     } catch (err) {
-      console.warn('/api/route 실패, 더미 루트 사용:', err.message);
-      routes = DUMMY_ROUTES;
+      setLoading(false);
+      showError('서버 연결에 실패했어요. 다시 시도해 주세요.');
+      console.error(err);
     }
-
-    window.__routes = routes;
-    clearLoading();
-
-    renderRouteOptions(routes);
-    updateRouteSummary(routes[0]);
-    selectedRouteId = routes[0].id;
-
-    document.getElementById('resultSection').classList.add('visible');
-
-    drawRoutes(routes);
   }
 
-  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  //  자연어 파싱 헬퍼
-  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  function _parseGoalKm(text) {
-    // "5km", "5 km", "5킬로" 같은 패턴 추출
-    const m = text.match(/(\d+(\.\d+)?)\s*(km|킬로)/i);
-    return m ? parseFloat(m[1]) : null;
+  function setLoading(on) {
+    document.getElementById('loader').classList.toggle('visible', on);
+    document.getElementById('runBtn').disabled = on;
   }
 
-  function _parseGoalMinutes(text) {
-    // "30분", "1시간" 같은 패턴 추출
-    const mMin  = text.match(/(\d+)\s*분/);
-    const mHour = text.match(/(\d+)\s*시간/);
-    if (mMin)  return parseInt(mMin[1]);
-    if (mHour) return parseInt(mHour[1]) * 60;
-    return null;
+  function showError(msg) {
+    const el = document.getElementById('errorMsg');
+    el.textContent = msg;
+    el.classList.add('visible');
   }
 
-  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  //  Enter 키 제출
-  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // Enter 전송
   document.getElementById('nlInput').addEventListener('keydown', e => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      run();
-    }
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); run(); }
   });
-
-  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  //  시작
-  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  initMap();
 </script>
 </body>
 </html>

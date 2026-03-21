@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from routers import chat, weight, route
+from routers import chat, weight, route, chat_route
 from services.rag import init_rag
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -25,6 +25,7 @@ async def lifespan(app: FastAPI):
 app.include_router(chat.router, prefix="/api")
 app.include_router(weight.router, prefix="/api")
 app.include_router(route.router, prefix="/api")
+app.include_router(chat_route.router, prefix="/api")
 
 
 @app.get("/health")
